@@ -1,5 +1,6 @@
 import pkg from 'espn-fantasy-football-api/node'
-import { getMatchupResults } from './espnFantasyClient'
+import { getMatchupResults, getTeamInformation } from './espnFantasyClient'
+import util from 'util'
 const { Client } = pkg
 const myClient = new Client({ leagueId: 50107295 })
 myClient.setCookies({ 
@@ -16,7 +17,7 @@ const url = `https://fantasy.espn.com/apis/v3/games/flb/seasons/2021/segments/0/
 //todo how to cache calls because oh baby are they slow
 
 export default async () => {
-    const matchupScoresForWeek9 = await getHomeAndAwayScoresForWeek(9)
+    const matchupScoresForWeek9 = await getHomeAndAwayScoresForWeek(1)
     const friendlyMatchupScoresForWeek9 = await replaceTeamIdWithTeamName(matchupScoresForWeek9)
 
     console.log(`Result: ${JSON.stringify(friendlyMatchupScoresForWeek9)}`) 
@@ -25,7 +26,7 @@ export default async () => {
 //todo i think gonna wanna switch to ts so can get some types for these responses
 const getHomeAndAwayScoresForWeek = async (weekNumber) => {
     const result = await getMatchupResults(weekNumber, '2021')
-
+    console.log(`RESULT: ${JSON.stringify(result)}`)
     return result.map(({homeScore, homeTeamId, awayScore, awayTeamId}) => ({
         homeScore,
         homeTeamId,
@@ -35,10 +36,7 @@ const getHomeAndAwayScoresForWeek = async (weekNumber) => {
 }
 
 const getTeamIdToNameMap = async () => {
-    const teamsList = await myClient.getTeamsAtWeek({
-        seasonId: 20278,
-        scoringPeriodId: 420
-    })
+    const teamsList = await getTeamInformation('2021')
 
     const responseMap = new Map()
 
