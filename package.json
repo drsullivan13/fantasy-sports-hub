@@ -15,13 +15,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@emotion/react": "^11.10.0",
+    "@emotion/styled": "^11.10.0",
+    "@mui/material": "^5.9.3",
     "axios": "^0.26.1",
     "eslint": "^8.0.1",
     "express": "^4.18.1",
     "jsend": "^1.1.0",
     "jsend-express": "^1.2.4",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.3.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.18.10",

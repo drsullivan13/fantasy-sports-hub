@@ -1,6 +1,5 @@
 import pkg from 'espn-fantasy-football-api/node'
 import { getHomeAndAwayScoresForWeek, replaceTeamIdWithTeamName } from './service'
-import { stringify } from './util'
 import express from 'express'
 import { JSend } from 'jsend-express'
 // import { inspect } from 'util'
@@ -20,8 +19,9 @@ app.use(express.json())
 
 const PORT = 3001
 
-app.post('/results/:week', async (req, res, next) => {
-  const weekNum = Number(req.params['week'])
+app.get('/results/:week', async (req, res, next) => {
+  // eslint-disable-next-line dot-notation
+  const weekNum = Number(req.params.week)
   console.log(`weekNum: ${JSON.stringify(weekNum)}`)
 
   const matchupScoresForWeek9 = await getHomeAndAwayScoresForWeek(weekNum)
