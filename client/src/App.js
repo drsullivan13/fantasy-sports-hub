@@ -22,6 +22,17 @@ function App() {
       setLoading(false)
     })
   }
+  /**
+   * todo
+   * create drop down to cycle through the matchups
+   * create a menu bar that can cycle through the weeks
+   * 
+   * want to create navigation system
+   * LANDING PAGE 
+   *  - go to league page
+   *  - individual teams page
+   *  - league matchups page
+   */
 
     return (
         <div>
