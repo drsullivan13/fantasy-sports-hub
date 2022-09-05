@@ -1,7 +1,7 @@
-import { getMatchupResults, getTeamInformation } from '../espnFantasyClient'
+import { getScheduleForWeek, getTeamInformation } from '../espnFantasyClient'
 
 export const getHomeAndAwayScoresForWeek = async (weekNumber) => {
-  const result = await getMatchupResults(weekNumber, '2021')
+  const result = await getScheduleForWeek(weekNumber, '2021')
   return result.map(({ home: { totalPoints: homeTotalPoints, teamId: homeTeamId }, away: { totalPoints: awayTotalPoints, teamId: awayTeamId }, winner }) => ({
     homeTotalPoints,
     homeTeamId,
@@ -9,6 +9,25 @@ export const getHomeAndAwayScoresForWeek = async (weekNumber) => {
     awayTeamId,
     winner
   }))
+}
+
+export const getAllTeamScoresSortedForWeek = async (weekNum) => {
+  const result = await getScheduleForWeek(weekNum)
+  const pointsScoredToTeamIdMap = {}
+  result.forEach(({ home: { totalPoints: homeTotalPoints, teamId: homeTeamId }, away: { totalPoints: awayTotalPoints, teamId: awayTeamId } }) => {
+    pointsScoredToTeamIdMap[homeTotalPoints] = homeTeamId
+    pointsScoredToTeamIdMap[awayTotalPoints] = awayTeamId
+  })
+
+  const sortedListOfScores = Object.keys(pointsScoredToTeamIdMap).sort((a, b) => a - b)
+
+  const sortedScoresToTeamName = new Map()
+  const teamIdToNameMap = await getTeamIdToNameMap()
+  sortedListOfScores.forEach((score) => {
+    sortedScoresToTeamName.set(score, teamIdToNameMap.get(pointsScoredToTeamIdMap[score]))
+  })
+
+  return sortedScoresToTeamName
 }
 
 export const replaceTeamIdWithTeamName = async (matchups) => {

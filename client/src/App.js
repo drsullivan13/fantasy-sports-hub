@@ -11,7 +11,7 @@ function App() {
 
   const fetchData = () => {
     setLoading(true)
-    fetch("/results/1")
+    fetch("/results/teamLeaderboard/1")
     .then((res) => res.json())
     .then((data) => {
       setData(data.data)

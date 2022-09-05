@@ -1,5 +1,5 @@
 import pkg from 'espn-fantasy-football-api/node'
-import { getHomeAndAwayScoresForWeek, replaceTeamIdWithTeamName } from './service'
+import { getHomeAndAwayScoresForWeek, replaceTeamIdWithTeamName, getAllTeamScoresSortedForWeek } from './service'
 import express from 'express'
 import { JSend } from 'jsend-express'
 // import { inspect } from 'util'
@@ -28,8 +28,15 @@ app.get('/results/:week', async (req, res, next) => {
   // console.log('matchup scores for week 1:', stringify(matchupScoresForWeek9))
   const friendlyMatchupScoresForWeek9 = await replaceTeamIdWithTeamName(matchupScoresForWeek9)
 
-  // console.log(`Result: ${stringify(friendlyMatchupScoresForWeek9)}`)
   res.success({ data: friendlyMatchupScoresForWeek9 })
+})
+
+app.get('/results/teamLeaderboard/:week', async (req, res, next) => {
+  const weekNum = Number(req.params.week)
+
+  const leaderboardForWeek = await getAllTeamScoresSortedForWeek(weekNum)
+
+  res.success({ data: Object.fromEntries(leaderboardForWeek) })
 })
 
 app.listen(PORT, () => console.log(`App listening at port ${PORT}`))
