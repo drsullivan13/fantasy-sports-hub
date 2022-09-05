@@ -1,5 +1,6 @@
-import './App.css';
-import React, { useEffect, useState } from 'react';
+import './App.css'
+import React, { useEffect, useState } from 'react'
+import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'recharts'
 
 function App() {
   const [data, setData] = useState(null)
@@ -34,12 +35,25 @@ function App() {
    *  - league matchups page
    */
 
+  const chart = (
+    <BarChart width={500} height={500} data={data} layout="horizontal">
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="teamName" />
+      <YAxis type="number" domain={[0, 200]}/>
+      <Tooltip />
+      <Legend />
+      <Bar dataKey="score" fill="#8884d8" />
+    </BarChart>
+  )
+
+  //JSON.stringify(data, null, 2)
+
     return (
         <div>
           <h1>Welcome to The Fantasy Sports Hub</h1>
           <>
           <pre>
-            {loading ? "Loading..." : JSON.stringify(data, null, 2)}
+            {loading ? "Loading..." : chart}
           </pre>
           </>
         </div>

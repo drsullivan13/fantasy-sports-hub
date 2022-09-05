@@ -21,13 +21,14 @@ export const getAllTeamScoresSortedForWeek = async (weekNum) => {
 
   const sortedListOfScores = Object.keys(pointsScoredToTeamIdMap).sort((a, b) => a - b)
 
-  const sortedScoresToTeamName = new Map()
   const teamIdToNameMap = await getTeamIdToNameMap()
+
+  const list = []
   sortedListOfScores.forEach((score) => {
-    sortedScoresToTeamName.set(score, teamIdToNameMap.get(pointsScoredToTeamIdMap[score]))
+    list.push({ teamName: teamIdToNameMap.get(pointsScoredToTeamIdMap[score]), score })
   })
 
-  return sortedScoresToTeamName
+  return list
 }
 
 export const replaceTeamIdWithTeamName = async (matchups) => {

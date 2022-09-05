@@ -36,7 +36,7 @@ app.get('/results/teamLeaderboard/:week', async (req, res, next) => {
 
   const leaderboardForWeek = await getAllTeamScoresSortedForWeek(weekNum)
 
-  res.success({ data: Object.fromEntries(leaderboardForWeek) })
+  res.success({ data: leaderboardForWeek })
 })
 
 app.listen(PORT, () => console.log(`App listening at port ${PORT}`))
