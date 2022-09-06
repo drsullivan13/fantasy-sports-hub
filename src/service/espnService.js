@@ -25,7 +25,9 @@ export const getAllTeamScoresSortedForWeek = async (weekNum) => {
 
   const list = []
   sortedListOfScores.forEach((score) => {
-    list.push({ teamName: teamIdToNameMap.get(pointsScoredToTeamIdMap[score]), score })
+    const { teamName, abbreviation } = teamIdToNameMap.get(pointsScoredToTeamIdMap[score])
+
+    list.push({ teamName, score, abbreviation })
   })
 
   return list
@@ -48,8 +50,8 @@ const getTeamIdToNameMap = async () => {
 
   const responseMap = new Map()
 
-  teamsList.forEach(({ id, location, nickname }) => {
-    responseMap.set(id, `${location} ${nickname}`)
+  teamsList.forEach(({ id, location, nickname, abbrev }) => {
+    responseMap.set(id, { teamName: `${location} ${nickname}`, abbreviation: abbrev })
   })
 
   return responseMap
