@@ -32,6 +32,9 @@ function App() {
    *  - go to league page
    *  - individual teams page
    *  - league matchups page
+   * 
+   * https://gist.github.com/rmiyazaki6499/b564b40e306707c8ff6ca9c67d38fb6f?permalink_comment_id=3846281
+   * ^example of how to deploy to AWS and EC2
    */
 
     return (
