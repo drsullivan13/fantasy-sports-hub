@@ -1,1 +1,1 @@
-export { getHomeAndAwayScoresForWeek, replaceTeamIdWithTeamName } from './espnService'
+export { getHomeAndAwayScoresForWeek, replaceTeamIdWithTeamName, getAllTeamScoresSortedForWeek } from './espnService'
