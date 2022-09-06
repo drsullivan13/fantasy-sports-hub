@@ -23,11 +23,6 @@ function App() {
       setLoading(false)
     })
   }
-
-  const getFill = (entry, index, third) => {
-    console.log('STUFF', entry, index, third)
-    return "#8884d8"
-  }
   /**
    * todo
    * create drop down to cycle through the matchups
@@ -68,8 +63,6 @@ function App() {
       </Bar>
     </BarChart>
   )
-
-  //JSON.stringify(data, null, 2)
 
     return (
         <div className="App-header">
