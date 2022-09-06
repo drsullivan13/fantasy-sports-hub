@@ -7,15 +7,15 @@ const cookie = 'espn_s2=AEB6eYtlqIgLDkLzrwf4LAS7KQwaliUFhzuOgsTduWE01%2FhOEbOKQF
 
 const axiosInstance = axios.create({ withCredentials: true })
 
-export const getMatchupResults = async (week, seasonId) => {
-  const { data: { schedule } } = await axiosInstance.get(`${baseUrl}/${seasonId}/segments/0/leagues/${leagueId}?view=mMatchup&view=mMatchupScore&scoringPeriodId=${week}`,
-    { withCredentials: true, headers: { cookie } })
-
-  return schedule.filter((matchup) => matchup.matchupPeriodId === week)
-}
-
 export const getTeamInformation = async (seasonId) => {
   const { data: { teams } } = await axiosInstance.get(`${baseUrl}/${seasonId}/segments/0/leagues/${leagueId}?scoringPeriodId=1&view=mRoster&view=mTeam`,
     { withCredentials: true, headers: { cookie } })
   return teams
+}
+
+export const getScheduleForWeek = async (weekNum) => {
+  const { data: { schedule } } = await axiosInstance.get(`${baseUrl}/${2021}/segments/0/leagues/${leagueId}?view=mMatchup&view=mMatchupScore&scoringPeriodId=${weekNum}`,
+    { withCredentials: true, headers: { cookie } })
+
+  return schedule.filter((matchup) => matchup.matchupPeriodId === weekNum)
 }
