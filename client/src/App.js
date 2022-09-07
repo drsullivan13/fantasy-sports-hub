@@ -1,18 +1,25 @@
 import './App.css'
 import React, { useEffect, useState } from 'react'
 import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, Cell } from 'recharts'
+import { FormControl, InputLabel, Select, MenuItem, FormHelperText } from '@mui/material' 
 
 function App() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [week, setWeek] = React.useState(1)
+
+  const handleChange = (event) => {
+    setWeek(event.target.value)
+
+  };
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData(week)
+  }, [week])
 
-  const fetchData = () => {
+  const fetchData = (week) => {
     setLoading(true)
-    fetch("/results/teamLeaderboard/1")
+    fetch(`/results/teamLeaderboard/${week}`)
     .then((res) => res.json())
     .then((data) => {
       setData(data.data)
@@ -71,7 +78,28 @@ function App() {
   )
 
     return (
-        <div className="App-header">
+      <div style={{ display: 'flex' }}>
+        <div className="Week-dropdown">
+        <FormControl sx={{ m: 1, minWidth: 120 }}>
+          <InputLabel id="demo-simple-select-helper-label">Week</InputLabel>
+          <Select
+            labelId="demo-simple-select-helper-label"
+            id="demo-simple-select-helper"
+            value={week}
+            label="Week"
+            onChange={handleChange}
+          >
+            <MenuItem value="">
+              <em>None</em>
+            </MenuItem>
+            <MenuItem value={1}>1</MenuItem>
+            <MenuItem value={2}>2</MenuItem>
+            <MenuItem value={3}>3</MenuItem>
+          </Select>
+          <FormHelperText>With label + helper text</FormHelperText>
+        </FormControl>
+        </div>
+      <div className="App-header">
           <h1>Welcome to The Fantasy Sports Hub</h1>
           <>
           <pre>
@@ -79,6 +107,8 @@ function App() {
           </pre>
           </>
         </div>
+      </div>
+       
     )
 }
 
