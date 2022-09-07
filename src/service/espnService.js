@@ -24,10 +24,10 @@ export const getAllTeamScoresSortedForWeek = async (weekNum) => {
   const teamIdToNameMap = await getTeamIdToNameMap()
 
   const list = []
-  sortedListOfScores.forEach((score) => {
+  sortedListOfScores.forEach((score, index) => {
     const { teamName, abbreviation } = teamIdToNameMap.get(pointsScoredToTeamIdMap[score])
 
-    list.push({ teamName, score, abbreviation })
+    list.push({ teamName, score, abbreviation, freedomPoints: parseInt(index) + 1 })
   })
 
   return list

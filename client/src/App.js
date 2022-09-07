@@ -39,7 +39,6 @@ function App() {
    */
 
   const percentageToColor = (perc) => {
-    console.log('yup', perc)
     var r, g, b = 0;
     if(perc < 50) {
       r = 255;
@@ -52,6 +51,10 @@ function App() {
     var h = r * 0x10000 + g * 0x100 + b * 0x1;
     return '#' + ('000000' + h.toString(16)).slice(-6);
   }
+
+  const tooltipFormatter = (value, name, props) => {
+    return [JSON.stringify({ score: value, freedomPoints: props?.payload?.freedomPoints }), 'Result']
+  }
   
 
   const chart = (
@@ -59,8 +62,8 @@ function App() {
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="abbreviation" interval={0} minTickGap={20} />
       <YAxis type="number" domain={[50, 175]}/>
-      <Tooltip labelFormatter={(value, name, props) => name[0]?.payload.teamName} />
-      <Legend />
+      <Tooltip formatter={(value, name, props) => tooltipFormatter(value, name, props)} labelFormatter={(value, name, props) => name[0]?.payload.teamName} />
+      {/* <Legend /> */}
       <Bar dataKey="score">
       { data?.map((entry, index) => (<Cell key={`cell-${index}`} fill={percentageToColor((index+1)*10)} />)) }
       </Bar>
