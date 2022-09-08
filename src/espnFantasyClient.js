@@ -19,3 +19,10 @@ export const getScheduleForWeek = async (weekNum) => {
 
   return schedule.filter((matchup) => matchup.matchupPeriodId === weekNum)
 }
+
+export const getLatestScoringPeriod = async () => {
+  const { data: { status: { latestScoringPeriod } } } = await axiosInstance.get(`${baseUrl}/${2021}/segments/0/leagues/${leagueId}`,
+    { withCredentials: true, headers: { cookie } })
+
+  return latestScoringPeriod
+}

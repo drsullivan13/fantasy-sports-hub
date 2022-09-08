@@ -33,8 +33,31 @@ export const getAllTeamScoresSortedForWeek = async (weekNum) => {
   return list
 }
 
+export const getFreedomStandings = async () => {
+  // todo a lot of optomizing to do here but it works, use new function instead of the getAll
+  // instead of the looping and switching from object to map to list maybe way we can do in one fell swoop
+  const teamNameToFreedomPointsDataMap = new Map()
+  for (let i = 1; i <= 10; i++) { // todo this will change based on what's the current scoring period
+    const leagueScoresSortedForGivenWeek = await getAllTeamScoresSortedForWeek(i)
+    leagueScoresSortedForGivenWeek.forEach(({ teamName, freedomPoints, abbreviation }) => {
+      if (teamNameToFreedomPointsDataMap.has(teamName)) {
+        const { freedomPoints: currentPoints } = teamNameToFreedomPointsDataMap.get(teamName)
+        teamNameToFreedomPointsDataMap.set(teamName, { teamName, freedomPoints: currentPoints + freedomPoints, abbreviation })
+      } else {
+        teamNameToFreedomPointsDataMap.set(teamName, { teamName, freedomPoints, abbreviation })
+      }
+    })
+  }
+
+  const responseList = []
+  for (const entry of teamNameToFreedomPointsDataMap.entries()) {
+    responseList.push(entry[1])
+  }
+
+  return responseList
+}
+
 export const replaceTeamIdWithTeamName = async (matchups) => {
-  // todo this gotta be fixed now
   const teamMap = await getTeamIdToNameMap()
   return matchups.map(({ homeTotalPoints, homeTeamId, awayTotalPoints, awayTeamId, winner }) => ({
     homeTeamName: teamMap.get(homeTeamId),

@@ -1,5 +1,5 @@
 import pkg from 'espn-fantasy-football-api/node'
-import { getHomeAndAwayScoresForWeek, replaceTeamIdWithTeamName, getAllTeamScoresSortedForWeek } from './service'
+import { getFreedomStandings, getAllTeamScoresSortedForWeek } from './service'
 import express from 'express'
 import { JSend } from 'jsend-express'
 // import { inspect } from 'util'
@@ -19,24 +19,17 @@ app.use(express.json())
 
 const PORT = 3001
 
-app.get('/results/:week', async (req, res, next) => {
-  // eslint-disable-next-line dot-notation
-  const weekNum = Number(req.params.week)
-  console.log(`weekNum: ${JSON.stringify(weekNum)}`)
-
-  const matchupScoresForWeek9 = await getHomeAndAwayScoresForWeek(weekNum)
-  // console.log('matchup scores for week 1:', stringify(matchupScoresForWeek9))
-  const friendlyMatchupScoresForWeek9 = await replaceTeamIdWithTeamName(matchupScoresForWeek9)
-
-  res.success({ data: friendlyMatchupScoresForWeek9 })
-})
-
 app.get('/results/teamLeaderboard/:week', async (req, res, next) => {
   const weekNum = Number(req.params.week)
 
   const leaderboardForWeek = await getAllTeamScoresSortedForWeek(weekNum)
 
   res.success({ data: leaderboardForWeek })
+})
+
+app.get('/results/freedomStandings', async (req, res, next) => {
+  const freedomStandings = await getFreedomStandings()
+  res.success({ data: freedomStandings })
 })
 
 app.listen(PORT, () => console.log(`App listening at port ${PORT}`))

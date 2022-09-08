@@ -1,7 +1,7 @@
 import './App.css'
 import React, { useEffect, useState } from 'react'
-import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, Cell } from 'recharts'
-import { FormControl, InputLabel, Select, MenuItem, FormHelperText } from '@mui/material' 
+import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, Cell } from 'recharts'
+import { FormControl, InputLabel, Select, MenuItem } from '@mui/material' 
 
 function App() {
   const [data, setData] = useState(null)
@@ -10,16 +10,18 @@ function App() {
 
   const handleChange = (event) => {
     setWeek(event.target.value)
-
-  };
+  }
 
   useEffect(() => {
-    fetchData(week)
+    if(week !== undefined)
+      fetchData(week)
   }, [week])
 
   const fetchData = (week) => {
     setLoading(true)
-    fetch(`/results/teamLeaderboard/${week}`)
+    let path
+    path = week === 'Freedom' ? `/results/freedomStandings` : `/results/teamLeaderboard/${week}`
+    fetch(path)
     .then((res) => res.json())
     .then((data) => {
       setData(data.data)
@@ -33,7 +35,13 @@ function App() {
   /**
    * todo
    * create drop down to cycle through the matchups
-   * create a menu bar that can cycle through the weeks
+   * add drop down for season year so can cycle back to previous years
+   * 
+   * store freedom points in table
+   * could even store these in a dynamo table so can fast search them later
+   * think about the cassandra db or something like that
+   * 
+   * have in the drop down the accumulte one
    * 
    * want to create navigation system
    * LANDING PAGE 
@@ -41,10 +49,13 @@ function App() {
    *  - individual teams page
    *  - league matchups page
    * 
+   * todo how to reload just the chart component and not move the drop down
+   * 
    * https://gist.github.com/rmiyazaki6499/b564b40e306707c8ff6ca9c67d38fb6f?permalink_comment_id=3846281
    * ^example of how to deploy to AWS and EC2
    */
 
+  //todo clean this
   const percentageToColor = (perc) => {
     var r, g, b = 0;
     if(perc < 50) {
@@ -63,23 +74,21 @@ function App() {
     return [JSON.stringify({ score: value, freedomPoints: props?.payload?.freedomPoints }), 'Result']
   }
   
-
+  //todo probably will want just a diff chart actually depending on if the week is a standard week or freedom
   const chart = (
     <BarChart width={1200} height={500} data={data} layout="horizontal">
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="abbreviation" interval={0} minTickGap={20} />
-      <YAxis type="number" domain={[50, 175]}/>
+      <YAxis type="number" domain={[50, 175]}/> // todo have this switch based on drop down
       <Tooltip formatter={(value, name, props) => tooltipFormatter(value, name, props)} labelFormatter={(value, name, props) => name[0]?.payload.teamName} />
       {/* <Legend /> */}
-      <Bar dataKey="score">
+      <Bar dataKey="freedomPoints"> // todo have this switch on drop down
       { data?.map((entry, index) => (<Cell key={`cell-${index}`} fill={percentageToColor((index+1)*10)} />)) }
       </Bar>
     </BarChart>
   )
 
-    return (
-      <div style={{ display: 'flex' }}>
-        <div className="Week-dropdown">
+  const weekDropDown = (
         <FormControl sx={{ m: 1, minWidth: 120 }}>
           <InputLabel id="demo-simple-select-helper-label">Week</InputLabel>
           <Select
@@ -89,15 +98,18 @@ function App() {
             label="Week"
             onChange={handleChange}
           >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
+            <MenuItem value='Freedom'>Freedom</MenuItem>
             <MenuItem value={1}>1</MenuItem>
             <MenuItem value={2}>2</MenuItem>
             <MenuItem value={3}>3</MenuItem>
           </Select>
-          <FormHelperText>With label + helper text</FormHelperText>
         </FormControl>
+  )
+
+    return (
+      <div style={{ display: 'flex' }}>
+        <div className="Week-dropdown">
+          { weekDropDown }
         </div>
       <div className="App-header">
           <h1>Welcome to The Fantasy Sports Hub</h1>
