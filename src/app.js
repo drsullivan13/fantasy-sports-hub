@@ -2,6 +2,7 @@ import pkg from 'espn-fantasy-football-api/node'
 import { getFreedomStandings, getAllTeamScoresSortedForWeek } from './service'
 import express from 'express'
 import { JSend } from 'jsend-express'
+import path from 'path'
 // import { inspect } from 'util'
 
 const { Client } = pkg
@@ -17,7 +18,10 @@ const jsend = new JSend({ name: 'fantasy-sports-hub', version: '0.0.1', release:
 app.use(jsend.middleware.bind(jsend))
 app.use(express.json())
 
-const PORT = 3001
+const PORT = 5000
+
+// Serve static files
+app.use(express.static('client/build'))
 
 app.get('/results/teamLeaderboard/:week', async (req, res, next) => {
   const weekNum = Number(req.params.week)
