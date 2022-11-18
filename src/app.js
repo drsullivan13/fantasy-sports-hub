@@ -18,7 +18,7 @@ const jsend = new JSend({ name: 'fantasy-sports-hub', version: '0.0.1', release:
 app.use(jsend.middleware.bind(jsend))
 app.use(express.json())
 
-const PORT = 5000
+const PORT = 5001
 
 // Serve static files
 app.use(express.static('client/build'))

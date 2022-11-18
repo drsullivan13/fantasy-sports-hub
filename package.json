@@ -23,6 +23,7 @@
     "express": "^4.18.1",
     "jsend": "^1.1.0",
     "jsend-express": "^1.2.4",
+    "lodash": "^4.17.21",
     "path": "^0.12.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

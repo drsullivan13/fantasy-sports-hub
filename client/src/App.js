@@ -1,7 +1,8 @@
 import './App.css'
 import React, { useEffect, useState } from 'react'
-import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, Cell } from 'recharts'
+import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, Cell, LabelList } from 'recharts'
 import { FormControl, InputLabel, Select, MenuItem } from '@mui/material' 
+import { orderBy } from 'lodash'
 
 function App() {
   const [data, setData] = useState(null)
@@ -24,7 +25,9 @@ function App() {
     fetch(path)
     .then((res) => res.json())
     .then((data) => {
-      setData(data.data)
+      const orderedData = orderBy(data.data, ['freedomPoints'], ['asc'])
+      console.log(`THIS IS THE DATA: ${JSON.stringify(orderedData)}`)
+      setData(orderedData)
       setLoading(false)
     })
     .catch((error) => {
@@ -76,13 +79,14 @@ function App() {
   
   //todo probably will want just a diff chart actually depending on if the week is a standard week or freedom
   const chart = (
-    <BarChart width={1200} height={500} data={data} layout="horizontal">
+    <BarChart width={1000} height={750} data={data} layout="vertical">
       <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="abbreviation" interval={0} minTickGap={20} />
-      <YAxis type="number" domain={[50, 175]}/> // todo have this switch based on drop down
+      <XAxis type="number" domain={[0, 85]} />
+      <YAxis type="category" dataKey="teamName" interval={0} minTickGap={20}/> // todo have this switch based on drop down
       <Tooltip formatter={(value, name, props) => tooltipFormatter(value, name, props)} labelFormatter={(value, name, props) => name[0]?.payload.teamName} />
       {/* <Legend /> */}
-      <Bar dataKey="freedomPoints"> // todo have this switch on drop down
+      <Bar dataKey="freedomPoints">
+        <LabelList fill='#000000' fontWeight='bold' dataKey="freedomPoints" position="right" /> // todo have this switch on drop down
       { data?.map((entry, index) => (<Cell key={`cell-${index}`} fill={percentageToColor((index+1)*10)} />)) }
       </Bar>
     </BarChart>

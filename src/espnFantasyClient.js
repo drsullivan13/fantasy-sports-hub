@@ -8,20 +8,20 @@ const cookie = 'espn_s2=AEB6eYtlqIgLDkLzrwf4LAS7KQwaliUFhzuOgsTduWE01%2FhOEbOKQF
 const axiosInstance = axios.create({ withCredentials: true })
 
 export const getTeamInformation = async (seasonId) => {
-  const { data: { teams } } = await axiosInstance.get(`${baseUrl}/${seasonId}/segments/0/leagues/${leagueId}?scoringPeriodId=1&view=mRoster&view=mTeam`,
+  const { data: { teams } } = await axiosInstance.get(`${baseUrl}/${2022}/segments/0/leagues/${leagueId}?scoringPeriodId=1&view=mRoster&view=mTeam`,
     { withCredentials: true, headers: { cookie } })
   return teams
 }
 
 export const getScheduleForWeek = async (weekNum) => {
-  const { data: { schedule } } = await axiosInstance.get(`${baseUrl}/${2021}/segments/0/leagues/${leagueId}?view=mMatchup&view=mMatchupScore&scoringPeriodId=${weekNum}`,
+  const { data: { schedule } } = await axiosInstance.get(`${baseUrl}/${2022}/segments/0/leagues/${leagueId}?view=mMatchup&view=mMatchupScore&scoringPeriodId=${weekNum}`,
     { withCredentials: true, headers: { cookie } })
 
   return schedule.filter((matchup) => matchup.matchupPeriodId === weekNum)
 }
 
 export const getLatestScoringPeriod = async () => {
-  const { data: { status: { latestScoringPeriod } } } = await axiosInstance.get(`${baseUrl}/${2021}/segments/0/leagues/${leagueId}`,
+  const { data: { status: { latestScoringPeriod } } } = await axiosInstance.get(`${baseUrl}/${2022}/segments/0/leagues/${leagueId}`,
     { withCredentials: true, headers: { cookie } })
 
   return latestScoringPeriod
