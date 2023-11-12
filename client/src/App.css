@@ -6,7 +6,14 @@
 }
 
 .Week-dropdown {
+  /* flex-direction: column; */
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.MuiDataGrid-root .MuiDataGrid-cell {
+  /* color: tomato; */
+  white-space: normal !important;
+  word-wrap: break-word !important;
 }

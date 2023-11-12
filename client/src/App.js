@@ -1,32 +1,52 @@
 import './App.css'
 import React, { useEffect, useState } from 'react'
-import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, Cell, LabelList } from 'recharts'
+// import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, Cell, LabelList } from 'recharts'
 import { FormControl, InputLabel, Select, MenuItem } from '@mui/material' 
 import { orderBy } from 'lodash'
+import { DataGrid } from '@mui/x-data-grid';
+
 
 function App() {
   const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [week, setWeek] = React.useState(1)
+  const [year, setYear] = React.useState('2023')
 
-  const handleChange = (event) => {
+  const columns = [
+    { field: 'teamName', headerName: 'Team Name', minWidth: 200, flex: 1 },
+    { field: 'freedomPoints', headerName: 'Freedom Points', minWidth: 125, flex: 0.5 },
+  ]
+
+  const handleWeekChange = (event) => {
     setWeek(event.target.value)
+  }
+
+  const handleYearChange = (event) => {
+    setYear(event.target.value)
   }
 
   useEffect(() => {
     if(week !== undefined)
-      fetchData(week)
-  }, [week])
+      fetchData(year, week)
+  }, [week, year])
 
-  const fetchData = (week) => {
+  const fetchData = (year, week) => {
     setLoading(true)
     let path
-    path = week === 'Freedom' ? `/results/freedomStandings` : `/results/teamLeaderboard/${week}`
+    path = week === 'Freedom' ? `/results/freedomStandings/${year}` : `/results/teamLeaderboard/${year}/${week}`
     fetch(path)
     .then((res) => res.json())
     .then((data) => {
-      const orderedData = orderBy(data.data, ['freedomPoints'], ['asc'])
+      const orderedData = orderBy(data.data, ['freedomPoints'], ['desc'])
       console.log(`THIS IS THE DATA: ${JSON.stringify(orderedData)}`)
+
+      // const rows: GridRowsProp = [
+      //   { id: 1, col1: 'Hello', col2: 'World' },
+      //   { id: 2, col1: 'DataGridPro', col2: 'is Awesome' },
+      //   { id: 3, col1: 'MUI', col2: 'is Amazing' },
+      // ];
+      
+
       setData(orderedData)
       setLoading(false)
     })
@@ -78,20 +98,48 @@ function App() {
   }
   
   //todo probably will want just a diff chart actually depending on if the week is a standard week or freedom
+  // const chart = (
+  //   <BarChart width={1000} height={750} data={data} layout='horizontal'>
+  //     <CartesianGrid strokeDasharray="3 3" />
+  //     <YAxis type="number" domain={[0, 85]} />
+  //     <XAxis type="category" dataKey="teamName" interval={0} minTickGap={20}/>
+  //     <Tooltip formatter={(value, name, props) => tooltipFormatter(value, name, props)} labelFormatter={(value, name, props) => name[0]?.payload.teamName} />
+  //     <Bar dataKey="freedomPoints">
+  //       <LabelList fill='#000000' fontWeight='bold' dataKey="freedomPoints" position="right" />
+  //     { data?.map((entry, index) => (<Cell key={`cell-${index}`} fill={percentageToColor((index+1)*10)} />)) }
+  //     </Bar>
+  //   </BarChart>
+  // )
+
   const chart = (
-    <BarChart width={1000} height={750} data={data} layout="vertical">
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis type="number" domain={[0, 85]} />
-      <YAxis type="category" dataKey="teamName" interval={0} minTickGap={20}/> // todo have this switch based on drop down
-      <Tooltip formatter={(value, name, props) => tooltipFormatter(value, name, props)} labelFormatter={(value, name, props) => name[0]?.payload.teamName} />
-      {/* <Legend /> */}
-      <Bar dataKey="freedomPoints">
-        <LabelList fill='#000000' fontWeight='bold' dataKey="freedomPoints" position="right" /> // todo have this switch on drop down
-      { data?.map((entry, index) => (<Cell key={`cell-${index}`} fill={percentageToColor((index+1)*10)} />)) }
-      </Bar>
-    </BarChart>
+    <DataGrid autoHeight rows={data} columns={columns} hideFooter={true} sx={{
+      '& .MuiDataGrid-columnHeaderTitle': {
+          textOverflow: "clip",
+          whiteSpace: "break-spaces",
+          lineHeight: 1
+      }}}
+      />
   )
 
+  const yearDropDown = (
+    <FormControl sx={{ m: 1, minWidth: 120 }}>
+      <InputLabel id="demo-simple-select-helper-label">Year</InputLabel>
+      <Select
+        labelId="demo-simple-select-helper-label"
+        id="demo-simple-select-helper"
+        value={year}
+        label="Year"
+        onChange={handleYearChange}
+      >
+        <MenuItem value='Freedom'>Freedom</MenuItem>
+        <MenuItem value='2021'>2021</MenuItem>
+        <MenuItem value='2022'>2022</MenuItem>
+        <MenuItem value='2023'>2023</MenuItem>
+      </Select>
+    </FormControl>
+)
+
+  // todo want this to auto populate items based on what comes back from the year selected
   const weekDropDown = (
         <FormControl sx={{ m: 1, minWidth: 120 }}>
           <InputLabel id="demo-simple-select-helper-label">Week</InputLabel>
@@ -100,7 +148,7 @@ function App() {
             id="demo-simple-select-helper"
             value={week}
             label="Week"
-            onChange={handleChange}
+            onChange={handleWeekChange}
           >
             <MenuItem value='Freedom'>Freedom</MenuItem>
             <MenuItem value={1}>1</MenuItem>
@@ -111,12 +159,17 @@ function App() {
   )
 
     return (
-      <div style={{ display: 'flex' }}>
-        <div className="Week-dropdown">
-          { weekDropDown }
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
       <div className="App-header">
-          <h1>Welcome to The Fantasy Sports Hub</h1>
+          <h1 style={{ textAlign: 'center' }}>THE Fantasy Sports Hub</h1>
+          <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <div className="Week-dropdown">
+              { yearDropDown }
+            </div>
+            <div className="Week-dropdown">
+              { weekDropDown }
+            </div>
+          </div>          
           <>
           <pre>
             {loading ? "Loading..." : chart}
