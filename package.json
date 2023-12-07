@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "yarn run eslint . --fix",
     "build": "rimraf dist && babel src --out-dir dist  --copy-files",
-    "start": "nodemon dist/app.js",
+    "start": "nodemon src/app.js",
     "start:dev": "NODE_OPTIONS='--experimental-specifier-resolution=node' nodemon --exec babel-node src/app.js",
     "vercel-build": "echo hello"
   },

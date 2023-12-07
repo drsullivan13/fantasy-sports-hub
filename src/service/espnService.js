@@ -1,4 +1,4 @@
-import { getScheduleResultsForYear, getTeamInformation, getScheduleForUpToWeek } from '../espnFantasyClient'
+import { getScheduleResultsForYear, getTeamInformation } from '../espnFantasyClient.js'
 
 export const getHomeAndAwayScoresForWeek = async (weekNumber) => {
   // const result = await getScheduleForWeek(weekNumber, '2021')

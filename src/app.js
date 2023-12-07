@@ -1,7 +1,8 @@
-import { Client } from 'espn-fantasy-football-api' // node
-import { getFreedomStandings, getAllTeamScoresSortedForWeek } from './service'
+import pkg from 'espn-fantasy-football-api/node.js'
+import { getFreedomStandings, getAllTeamScoresSortedForWeek } from './service/index.js'
 import express from 'express'
 import { JSend } from 'jsend-express'
+const { Client } = pkg
 
 const myClient = new Client({ leagueId: 40736849 })
 myClient.setCookies({
