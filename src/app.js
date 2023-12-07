@@ -18,7 +18,7 @@ app.use(express.json())
 const PORT = 5001
 
 // Serve static files
-app.use(express.static('client/build'))
+// app.use(express.static('client/build'))
 
 app.get('/results/teamLeaderboard/:year/:week', async (req, res, next) => {
   const year = req.params.year
