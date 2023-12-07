@@ -2,6 +2,7 @@ import pkg from 'espn-fantasy-football-api/node.js'
 import { getFreedomStandings, getAllTeamScoresSortedForWeek } from './service/index.js'
 import express from 'express'
 import { JSend } from 'jsend-express'
+import cors from 'cors'
 const { Client } = pkg
 
 const myClient = new Client({ leagueId: 40736849 })
@@ -11,6 +12,13 @@ myClient.setCookies({
 })
 
 const app = express()
+
+app.use(cors({
+  origin: ['https://fantasy-sports-hub-api.vercel.app'],
+  methods: ['GET'],
+  credentials: true
+}))
+
 const jsend = new JSend({ name: 'fantasy-sports-hub', version: '0.0.1', release: '0.0.1' })
 
 app.use(jsend.middleware.bind(jsend))
