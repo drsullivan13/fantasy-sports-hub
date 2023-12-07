@@ -63,7 +63,8 @@ function App() {
   const fetchData = async (year, week) => {
     setLoading(true)
     let path
-    path = week === 'Freedom' ? `/results/freedomStandings/${year}` : `/results/teamLeaderboard/${year}/${week}`
+    // path = week === 'Freedom' ? `/results/freedomStandings/${year}` : `/results/teamLeaderboard/${year}/${week}`
+    path = week === 'Freedom' ? `https://fantasy-sports-hub-api.vercel.app/results/freedomStandings/${year}` : `https://fantasy-sports-hub-api.vercel.app/results/teamLeaderboard/${year}/${week}`
     fetch(path)
     .then((res) => res.json())
     .then((data) => {
