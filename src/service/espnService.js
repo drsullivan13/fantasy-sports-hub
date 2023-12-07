@@ -1,23 +1,23 @@
-import { getScheduleForWeek, getTeamInformation, getScheduleForUpToWeek } from '../espnFantasyClient'
+import { getScheduleResultsForYear, getTeamInformation, getScheduleForUpToWeek } from '../espnFantasyClient'
 
 export const getHomeAndAwayScoresForWeek = async (weekNumber) => {
-  const result = await getScheduleForWeek(weekNumber, '2021')
-  return result.map(({ home: { totalPoints: homeTotalPoints, teamId: homeTeamId }, away: { totalPoints: awayTotalPoints, teamId: awayTeamId }, winner }) => ({
-    homeTotalPoints,
-    homeTeamId,
-    awayTotalPoints,
-    awayTeamId,
-    winner
-  }))
+  // const result = await getScheduleForWeek(weekNumber, '2021')
+  // return result.map(({ home: { totalPoints: homeTotalPoints, teamId: homeTeamId }, away: { totalPoints: awayTotalPoints, teamId: awayTeamId }, winner }) => ({
+  //   homeTotalPoints,
+  //   homeTeamId,
+  //   awayTotalPoints,
+  //   awayTeamId,
+  //   winner
+  // }))
 }
 
 export const getAllTeamScoresSortedForWeek = async (year, weekNum) => {
-  const result = await getScheduleForWeek(year, weekNum)
+  // const result = await getScheduleForWeek(year, weekNum)
   const pointsScoredToTeamIdMap = {}
-  result.forEach(({ home: { totalPoints: homeTotalPoints, teamId: homeTeamId }, away: { totalPoints: awayTotalPoints, teamId: awayTeamId } }) => {
-    pointsScoredToTeamIdMap[homeTotalPoints] = homeTeamId
-    pointsScoredToTeamIdMap[awayTotalPoints] = awayTeamId
-  })
+  // result.forEach(({ home: { totalPoints: homeTotalPoints, teamId: homeTeamId }, away: { totalPoints: awayTotalPoints, teamId: awayTeamId } }) => {
+  //   pointsScoredToTeamIdMap[homeTotalPoints] = homeTeamId
+  //   pointsScoredToTeamIdMap[awayTotalPoints] = awayTeamId
+  // })
 
   const sortedListOfScores = Object.keys(pointsScoredToTeamIdMap).sort((a, b) => a - b)
 
@@ -41,70 +41,51 @@ export const getAllTeamScoresSortedForWeek = async (year, weekNum) => {
 }
 
 export const getFreedomStandings = async (year) => {
-  // todo a lot of optomizing to do here but it works, use new function instead of the getAll
-  // instead of the looping and switching from object to map to list maybe way we can do in one fell swoop
-  const teamNameToFreedomPointsDataMap = new Map()
-  for (let i = 1; i <= 10; i++) { // todo this will change based on what's the current scoring period
-    const leagueScoresSortedForGivenWeek = await getAllTeamScoresSortedForWeek(year, i)
-    leagueScoresSortedForGivenWeek.forEach(({ teamName, freedomPoints, abbreviation }) => {
-      if (teamNameToFreedomPointsDataMap.has(teamName)) {
-        const { freedomPoints: currentPoints } = teamNameToFreedomPointsDataMap.get(teamName)
-        teamNameToFreedomPointsDataMap.set(teamName, { teamName, freedomPoints: currentPoints + freedomPoints, abbreviation })
-      } else {
-        teamNameToFreedomPointsDataMap.set(teamName, { teamName, freedomPoints, abbreviation })
-      }
+  const result = await getScheduleResultsForYear(year)
+  const teamIdToNameMap = await getTeamIdToNameMap(year)
+
+  const freedomPointsResult = generateFreedomPointsData(result, teamIdToNameMap)
+
+  return freedomPointsResult
+}
+
+const generateFreedomPointsData = (matchupData, teamIdToNameMap) => {
+  const result = {
+    freedomPoints: {},
+    weeklyFreedomPoints: []
+  }
+
+  const matchupPeriods = [...new Set(matchupData.map((matchup) => matchup.matchupPeriodId))]
+
+  const teamIdToOverallFreedomPoints = {}
+
+  matchupPeriods.forEach((matchupPeriodId) => {
+    const weeklyPoints = {}
+    const teamIdTotalPointsForGivenWeek = []
+    matchupData
+      .filter((matchup) => (matchup.matchupPeriodId === matchupPeriodId) && matchup.playoffTierType === 'NONE' && matchup.winner !== 'UNDECIDED')
+      .forEach(({ home, away }) => {
+        // get an array {teamId: totalPoints}
+        teamIdTotalPointsForGivenWeek.push({ teamName: teamIdToNameMap.get(home.teamId).teamName, totalPoints: home.totalPoints }, { teamName: teamIdToNameMap.get(away.teamId).teamName, totalPoints: away.totalPoints })
+        // sort array by totalPoints
+      })
+    const sortedTeamIdTotalPointsForGivenWeek = teamIdTotalPointsForGivenWeek.sort((a, b) => a.totalPoints - b.totalPoints)
+
+    // based on the order award freedom points for given teamId
+    sortedTeamIdTotalPointsForGivenWeek.forEach(({ teamName }, index) => {
+      const freedomPointsCollectedInWeek = index + 1
+      const freedomPointsCollectedThroughWeek = (teamIdToOverallFreedomPoints[teamName] ?? 0) + freedomPointsCollectedInWeek
+
+      weeklyPoints[teamName] = { freedomPointsInWeek: freedomPointsCollectedInWeek, totalFreedomPointsThroughWeek: freedomPointsCollectedThroughWeek }
+      teamIdToOverallFreedomPoints[teamName] = freedomPointsCollectedThroughWeek
     })
-  }
 
-  const responseList = []
-  for (const entry of teamNameToFreedomPointsDataMap.entries()) {
-    responseList.push(entry[1])
-  }
-
-  // console.log('WHAT IS THIS: ', JSON.stringify(responseList))
-
-  return responseList
-}
-
-const getFreedomPointsForUpToWeek = (week) => {
-  const scheduleUpToWeek = getScheduleForUpToWeek(week)
-  const points = scheduleUpToWeek.map(matchup => matchup.away.totalPoints + matchup.home.totalPoints);
-  const maxPoints = Math.max(...points)
-  const minPoints = Math.min(...points)
-
-  const sortedPoints = points.slice().sort((a, b) => b - a);
-  const rankMap = points.reduce((acc, curr) => {
-    acc[curr] = sortedPoints.indexOf(curr) + 1
-    return acc
-  }, {})
-
-  return scheduleUpToWeek.map(matchup => {
-    const homePoints = matchup.home.totalPoints
-    const awayPoints = matchup.away.totalPoints
-    const homeFreedomPoints = rankMap[homePoints] + (10 - rankMap[maxPoints]) * (homePoints - minPoints) / (maxPoints - minPoints)
-    const awayFreedomPoints = rankMap[awayPoints] + (10 - rankMap[maxPoints]) * (awayPoints - minPoints) / (maxPoints - minPoints)
-    return {
-      home: {
-        teamId: matchup.home.teamId,
-        freedomPoints: homeFreedomPoints
-      },
-      away: {
-        teamId: matchup.away.teamId,
-        freedomPoints: awayFreedomPoints
-      }
-    }
+    result.weeklyFreedomPoints.push(weeklyPoints)
   })
-}
 
-export const replaceTeamIdWithTeamName = async (matchups) => {
-  const teamMap = await getTeamIdToNameMap()
-  return matchups.map(({ homeTotalPoints, homeTeamId, awayTotalPoints, awayTeamId, winner }) => ({
-    homeTeamName: teamMap.get(homeTeamId),
-    homeTotalPoints,
-    awayTeamName: teamMap.get(awayTeamId),
-    awayTotalPoints,
-    winner
-  }))
+  result.freedomPoints = teamIdToOverallFreedomPoints
+
+  return result
 }
 
 const getTeamIdToNameMap = async (year) => {

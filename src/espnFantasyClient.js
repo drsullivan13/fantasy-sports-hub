@@ -13,15 +13,16 @@ export const getTeamInformation = async (year) => {
   return teams
 }
 
-export const getScheduleForWeek = async (year, weekNum) => {
-  const { data: { schedule } } = await axiosInstance.get(`${baseUrl}/${year}/segments/0/leagues/${leagueId}?view=mMatchup&view=mMatchupScore&scoringPeriodId=${weekNum}`,
+export const getScheduleResultsForYear = async (year) => {
+  const { data: { schedule } } = await axiosInstance.get(`${baseUrl}/${year}/segments/0/leagues/${leagueId}?view=mMatchup&view=mMatchupScore`,
     { withCredentials: true, headers: { cookie } })
 
-  return schedule.filter((matchup) => matchup.matchupPeriodId === weekNum)
+  return schedule.map(({ home, away, matchupPeriodId, playoffTierType, winner }) =>
+    ({ home: { teamId: home.teamId, totalPoints: home.totalPoints }, away: { teamId: away.teamId, totalPoints: away.totalPoints }, matchupPeriodId, playoffTierType, winner }))
 }
 
 export const getScheduleForUpToWeek = async (weekNum) => {
-  const { data: { schedule } } = await axiosInstance.get(`${baseUrl}/${2022}/segments/0/leagues/${leagueId}?view=mMatchup&view=mMatchupScore&scoringPeriodId=${weekNum}`,
+  const { data: { schedule } } = await axiosInstance.get(`${baseUrl}/${2022}/segments/0/leagues/${leagueId}?view=mMatchup&view=mMatchupScore`,
     { withCredentials: true, headers: { cookie } })
 
   return schedule.filter((matchup) => matchup.matchupPeriodId <= weekNum)
