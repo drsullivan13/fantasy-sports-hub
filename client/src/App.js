@@ -45,7 +45,7 @@ function App() {
       })
     }
 
-    console.log(`NEW ROWS: ${JSON.stringify(newRows)}`)
+    // console.log(`NEW ROWS: ${JSON.stringify(newRows)}`)
     setChartRows(newRows)
   }
 
