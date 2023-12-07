@@ -36,3 +36,5 @@ app.get('/results/freedomStandings/:year', async (req, res, next) => {
 })
 
 app.listen(PORT, () => console.log(`App listening at port ${PORT}`))
+
+export default app
