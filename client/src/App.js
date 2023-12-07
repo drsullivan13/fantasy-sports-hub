@@ -156,6 +156,9 @@ function App() {
             whiteSpace: "break-spaces",
             lineHeight: 1
         }}}
+        initialState={{
+          sorting: { sortModel: [{ field:'freedomPoints', sort: 'desc' }] }
+        }}
         />
     )
   }
