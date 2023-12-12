@@ -18,7 +18,7 @@ export const getScheduleResultsForYear = async (year) => {
     { withCredentials: true, headers: { cookie } })
 
   return schedule.map(({ home, away, matchupPeriodId, playoffTierType, winner }) =>
-    ({ home: { teamId: home.teamId, totalPoints: home.totalPoints }, away: { teamId: away.teamId, totalPoints: away.totalPoints }, matchupPeriodId, playoffTierType, winner }))
+    ({ home: { teamId: home.teamId, totalPoints: home.totalPoints }, away: { teamId: away?.teamId, totalPoints: away?.totalPoints }, matchupPeriodId, playoffTierType, winner }))
 }
 
 export const getScheduleForUpToWeek = async (weekNum) => {
