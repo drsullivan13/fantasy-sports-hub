@@ -14,7 +14,7 @@ myClient.setCookies({
 const app = express()
 
 app.use(cors({
-  origin: ['https://fantasy-sports-hub-api.vercel.app'],
+  origin: ['https://fantasy-sports-hub-api.vercel.app', 'http://localhost:3000'],
   methods: ['GET'],
   credentials: true
 }))
@@ -29,17 +29,21 @@ const PORT = 5001
 // Serve static files
 // app.use(express.static('client/build'))
 
-app.get('/results/teamLeaderboard/:year/:week', async (req, res, next) => {
-  const year = req.params.year
+app.get('/results/:leagueType/:leagueId/teamLeaderboard/:year/:week', async (req, res, next) => {
+  const { year, leagueType, leagueId } = req.params
+  process.env.LEAGUE_TYPE = leagueType
+  process.env.LEAGUE_ID = leagueId
   const weekNum = Number(req.params.week)
 
-  const leaderboardForWeek = await getAllTeamScoresSortedForWeek(year, weekNum)
+  const leaderboardForWeek = await getAllTeamScoresSortedForWeek(leagueType, leagueId, year, weekNum)
 
   res.success({ data: leaderboardForWeek })
 })
 
-app.get('/results/freedomStandings/:year', async (req, res, next) => {
-  const year = req.params.year
+app.get('/results/:leagueType/:leagueId/freedomStandings/:year', async (req, res, next) => {
+  const { year, leagueType, leagueId } = req.params
+  process.env.LEAGUE_TYPE = leagueType
+  process.env.LEAGUE_ID = leagueId
   const freedomStandings = await getFreedomStandings(year)
   res.success({ data: freedomStandings })
 })
