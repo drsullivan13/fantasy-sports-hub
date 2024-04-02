@@ -5,13 +5,13 @@ import { useParams } from 'react-router-dom'
 
 const freedomColumns = [
     { field: 'teamName', headerName: 'Team Name', minWidth: 200, flex: 1 },
-    { field: 'freedomPoints', headerName: 'Total Freedom Points', minWidth: 125, flex: 0.5 },
+    { field: 'freedomPoints', headerName: 'Total Bud Light Limes', minWidth: 125, flex: 0.5 },
   ]
   
   const weeklyFreedomColumns = [
     { field: 'teamName', headerName: 'Team Name', minWidth: 200, flex: 1 },
     { field: 'weekFreedomPoints', headerName: 'Weekly Points', minWidth: 125, flex: 0.5 },
-    { field: 'freedomPoints', headerName: 'Total Freedom Points', minWidth: 125, flex: 0.5 },
+    { field: 'freedomPoints', headerName: 'Total Bud Light Limes', minWidth: 125, flex: 0.5 },
   ]
 
   const percentageToColor = (perc) => {
@@ -148,7 +148,7 @@ export const Leaderboard = () => {
   const weekMenuItems = () => {
     const menuItems = [
       <MenuItem key="Freedom" value="Freedom">
-        Freedom
+        Bud Light Limes
       </MenuItem>,
     ]
 
