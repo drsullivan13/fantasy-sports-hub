@@ -1,4 +1,4 @@
-import { getScheduleResultsForYear, getTeamInformation } from '../espnFantasyClient.js'
+import { getScheduleResultsForYear, getTeamInformation, getSeasonYears, getSeasonWeeks } from '../espnFantasyClient.js'
 
 export const getHomeAndAwayScoresForWeek = async (weekNumber) => {
   // const result = await getScheduleForWeek(weekNumber, '2021')
@@ -100,4 +100,40 @@ const getTeamIdToNameMap = async (year) => {
   })
 
   return responseMap
+}
+
+export const getLeagueInfo = async () => {
+  const years = await getSeasonYears()
+  const yearToWeeksMap = {}
+
+  console.log('YEARS' + years)
+
+  const test = await Promise.all(years.map(processYear))
+    .then(yearToWeeks => {
+      // const yearToWeeksMap = {}
+      yearToWeeks.forEach(({ year, currentWeek }) => {
+        yearToWeeksMap[year] = currentWeek
+      })
+      return yearToWeeksMap
+    })
+    .catch(error => {
+      console.error('Error processing years:', error)
+    })
+
+  // await years.forEach(async (year) => {
+  //   const currentWeek = await getSeasonWeeks(year)
+  //   console.log(`CURRENT WEEK` + currentWeek)
+  //   yearToWeeksMap[year] = currentWeek
+  // })
+
+  console.log('YO YO YO' + JSON.stringify(test))
+
+  return test
+}
+
+const processYear = async (year) => {
+  // todo want to update this to only return the amount of REGULAR SEASON weeks
+  const currentWeek = await getSeasonWeeks(year);
+  console.log(`CURRENT WEEK for ${year}: ${currentWeek}`);
+  return { year, currentWeek };
 }

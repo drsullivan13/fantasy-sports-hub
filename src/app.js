@@ -1,5 +1,5 @@
 import pkg from 'espn-fantasy-football-api/node.js'
-import { getFreedomStandings, getAllTeamScoresSortedForWeek } from './service/index.js'
+import { getFreedomStandings, getAllTeamScoresSortedForWeek, getLeagueInfo } from './service/index.js'
 import express from 'express'
 import { JSend } from 'jsend-express'
 import cors from 'cors'
@@ -30,12 +30,12 @@ const PORT = 5001
 // app.use(express.static('client/build'))
 
 app.get('/results/:leagueType/:leagueId/teamLeaderboard/:year/:week', async (req, res, next) => {
-  const { year, leagueType, leagueId } = req.params
+  const { leagueType, leagueId, year } = req.params
   process.env.LEAGUE_TYPE = leagueType
   process.env.LEAGUE_ID = leagueId
   const weekNum = Number(req.params.week)
 
-  const leaderboardForWeek = await getAllTeamScoresSortedForWeek(leagueType, leagueId, year, weekNum)
+  const leaderboardForWeek = await getAllTeamScoresSortedForWeek(year, weekNum)
 
   res.success({ data: leaderboardForWeek })
 })
@@ -46,6 +46,14 @@ app.get('/results/:leagueType/:leagueId/freedomStandings/:year', async (req, res
   process.env.LEAGUE_ID = leagueId
   const freedomStandings = await getFreedomStandings(year)
   res.success({ data: freedomStandings })
+})
+
+app.get('/leagueInfo', async (req, res, next) => {
+  const { leagueType, leagueId } = req.query
+  process.env.LEAGUE_TYPE = leagueType
+  process.env.LEAGUE_ID = leagueId
+  const leagueInfo = await getLeagueInfo()
+  res.success({ data: leagueInfo })
 })
 
 app.listen(PORT, () => console.log(`App listening at port ${PORT}`))

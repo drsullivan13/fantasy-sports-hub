@@ -1,1 +1,1 @@
-export { getHomeAndAwayScoresForWeek, getAllTeamScoresSortedForWeek, getFreedomStandings } from './espnService.js'
+export { getHomeAndAwayScoresForWeek, getAllTeamScoresSortedForWeek, getFreedomStandings, getLeagueInfo } from './espnService.js'

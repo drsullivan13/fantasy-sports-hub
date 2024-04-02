@@ -36,7 +36,10 @@ export const Leaderboard = () => {
   const { leagueType, leagueId } = useParams()
   const [loading, setLoading] = useState(true)
   const [week, setWeek] = useState('Freedom')
-  const [year, setYear] = useState('2023')
+  const [year, setYear] = useState('2024')
+  const [weeks, setWeeks] = useState(['Freedom'])
+  const [years, setYears] = useState(['2024'])
+  const [leagueInfo, setLeagueInfo] = useState({})
   const [freedomStandings, setFreedomStandings] = useState({})
   const [weeklyStandings, setWeeklyStandings] = useState(null)
   const [haveFetchedData, setHaveFetchedData] = useState(false)
@@ -46,6 +49,7 @@ export const Leaderboard = () => {
   const handleWeekChange = (event) => {
     setWeek(event.target.value)
     const newRows = []
+
     if (event.target.value === 'Freedom') {
       setColumns(freedomColumns)
       Object.keys(freedomStandings).forEach((teamName, index) => {
@@ -60,18 +64,20 @@ export const Leaderboard = () => {
       })
     }
 
-    // console.log(`NEW ROWS: ${JSON.stringify(newRows)}`)
     setChartRows(newRows)
   }
 
-  const handleYearChange = (event) => {
+  const handleYearChange = async (event) => {
     setYear(event.target.value)
+    setWeeks(leagueInfo[event.target.value])
+    await fetchData(event.target.value, 'Freedom')
+    setWeek('Freedom')
   }
 
   useEffect(() => {
     if(week !== undefined && !haveFetchedData) {
       // only want to fetch weeks on initial load and if there is a year change
-      Promise.all([fetchData(year, week), fetchWeeks()])
+      Promise.all([fetchData(year, week), fetchLeagueInfo(leagueType, leagueId)])
     }
   }, [week, year, haveFetchedData])
 
@@ -83,13 +89,13 @@ export const Leaderboard = () => {
     path = week === 'Freedom' ? `https://fantasy-sports-hub-api.vercel.app/results/${leagueType}/${leagueId}/freedomStandings/${year}` : `https://fantasy-sports-hub-api.vercel.app/results/${leagueType}/${leagueId}/teamLeaderboard/${year}/${week}`
     fetch(path)
     .then((res) => res.json())
-    .then((data) => {
-      setFreedomStandings(data.data.freedomPoints)
-      setWeeklyStandings(data.data.weeklyFreedomPoints)
+    .then(({ data: { freedomPoints, weeklyFreedomPoints } }) => {
+      setFreedomStandings(freedomPoints)
+      setWeeklyStandings(weeklyFreedomPoints)
 
       const newRows = []
-      Object.keys(data.data.freedomPoints).forEach((teamName, index) => {
-        newRows.push({ id: index, teamName, freedomPoints: data.data.freedomPoints[teamName] })
+      Object.keys(freedomPoints).forEach((teamName, index) => {
+        newRows.push({ id: index, teamName, freedomPoints: freedomPoints[teamName] })
       })
       setChartRows(newRows)
       setColumns(freedomColumns)
@@ -117,55 +123,72 @@ export const Leaderboard = () => {
     )
   }
 
-  const yearDropDown = (
+  const yearDropDown = () => {
+    return (
+      <FormControl sx={{ m: 1, minWidth: 120 }}>
+        <InputLabel id="demo-simple-select-helper-label">Year</InputLabel>
+        <Select
+          labelId="demo-simple-select-helper-label"
+          id="demo-simple-select-helper"
+          value={year}
+          label="Year"
+          onChange={handleYearChange}
+        >
+
+        {years.map((year) => (
+          <MenuItem key={year} value={year}>
+            {year}
+          </MenuItem>
+        ))}
+        </Select>
+      </FormControl>
+    )
+  }
+
+  const weekMenuItems = () => {
+    const menuItems = [
+      <MenuItem key="Freedom" value="Freedom">
+        Freedom
+      </MenuItem>,
+    ]
+
+    for (let i = 1; i <= leagueInfo[year]; i++) {
+      menuItems.push(
+        <MenuItem key={`${i}`} value={`${i}`}>
+          {`${i}`}
+        </MenuItem>
+      )
+    }
+
+    return menuItems
+  }
+  
+  const weekDropDown = (
     <FormControl sx={{ m: 1, minWidth: 120 }}>
-      <InputLabel id="demo-simple-select-helper-label">Year</InputLabel>
+      <InputLabel id="demo-simple-select-helper-label">Week</InputLabel>
       <Select
         labelId="demo-simple-select-helper-label"
         id="demo-simple-select-helper"
-        value={year}
-        label="Year"
-        onChange={handleYearChange}
+        value={week}
+        label="Week"
+        onChange={handleWeekChange}
       >
-        <MenuItem value='2023'>2023</MenuItem>
+        {weekMenuItems()}
       </Select>
     </FormControl>
-)
+  );
 
-  // todo want this to auto populate items based on what comes back from the year selected
-  const weekDropDown = (
-        <FormControl sx={{ m: 1, minWidth: 120 }}>
-          <InputLabel id="demo-simple-select-helper-label">Week</InputLabel>
-          <Select
-            labelId="demo-simple-select-helper-label"
-            id="demo-simple-select-helper"
-            value={week}
-            label="Week"
-            onChange={handleWeekChange}
-          >
-            <MenuItem value='Freedom'>Freedom</MenuItem>
-            <MenuItem value={1}>1</MenuItem>
-            <MenuItem value={2}>2</MenuItem>
-            <MenuItem value={3}>3</MenuItem>
-            <MenuItem value={4}>4</MenuItem>
-            <MenuItem value={5}>5</MenuItem>
-            <MenuItem value={6}>6</MenuItem>
-            <MenuItem value={7}>7</MenuItem>
-            <MenuItem value={8}>8</MenuItem>
-            <MenuItem value={9}>9</MenuItem>
-            <MenuItem value={10}>10</MenuItem>
-            <MenuItem value={11}>11</MenuItem>
-            <MenuItem value={12}>12</MenuItem>
-            <MenuItem value={13}>13</MenuItem>
-            <MenuItem value={14}>14</MenuItem>
-          </Select>
-        </FormControl>
-  )
-
-  const fetchWeeks = async () => {
-    return ''
+  const fetchLeagueInfo = async (leagueType, leagueId) => {
+    // const path = `http://localhost:5001/leagueInfo?leagueType=${leagueType}&leagueId=${leagueId}`
+    const path = `https://fantasy-sports-hub-api.vercel.app/leagueInfo?leagueType=${leagueType}&leagueId=${leagueId}`
+    fetch(path)
+    .then((res) => res.json())
+    .then((data) => {
+      console.log(`THIS IS THE DATA: ` + JSON.stringify(data))
+      setYears(Object.keys(data.data))
+      setLeagueInfo(data.data)
+    })
   }
-
 
     return  (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
@@ -173,7 +196,7 @@ export const Leaderboard = () => {
             <h1 style={{ textAlign: 'center' }}>THE Fantasy Sports Hub</h1>
             <div style={{ display: 'flex', flexDirection: 'row' }}>
               <div className="Week-dropdown">
-                { yearDropDown }
+                { yearDropDown() }
               </div>
               <div className="Week-dropdown">
                 { weekDropDown }

@@ -36,6 +36,20 @@ export const getLatestScoringPeriod = async () => {
   return latestScoringPeriod
 }
 
+export const getSeasonYears = async () => {
+  const { data: { seasonId, status: { previousSeasons } } } = await axiosInstance.get(`${getBaseUrl()}/2024/segments/0/leagues/${process.env.LEAGUE_ID}?view=mMatchup&view=mMatchupScore`,
+    { withCredentials: true, headers: { cookie } })
+
+  return [seasonId, ...previousSeasons]
+}
+
+export const getSeasonWeeks = async (year) => {
+  const { data: { status: { currentMatchupPeriod } } } = await axiosInstance.get(`${getBaseUrl()}/${year}/segments/0/leagues/${process.env.LEAGUE_ID}?view=mMatchup&view=mMatchupScore`,
+    { withCredentials: true, headers: { cookie } })
+
+  return currentMatchupPeriod
+}
+
 const getBaseUrl = () => {
   const leagueTypeToUrl = {
     football: footballBaseUrl,
