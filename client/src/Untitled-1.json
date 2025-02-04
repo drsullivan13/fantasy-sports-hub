@@ -1,0 +1,52 @@
+[
+  {
+    "id": "CFS",
+    "teamName": "The Chicken Finger Specials",
+    "freedomPoints": 10
+  },
+  {
+    "id": "RIP",
+    "teamName": "Rag Tag Bunch",
+    "freedomPoints": 9
+  },
+  {
+    "id": "COOK",
+    "teamName": "Too Many Cooks",
+    "freedomPoints": 8
+  },
+  {
+    "id": "RT",
+    "teamName": "Rocky  Top",
+    "freedomPoints": 7
+  },
+  {
+    "id": "DRM",
+    "teamName": "Stroudy Partner",
+    "freedomPoints": 6
+  },
+  {
+    "id": "LAST",
+    "teamName": "Team  26.2",
+    "freedomPoints": 5
+  },
+  {
+    "id": "JNMT",
+    "teamName": "Jake Nevin's Medical Tent",
+    "freedomPoints": 4
+  },
+  {
+    "id": "Rip",
+    "teamName": "Power Rankings Are Wrong",
+    "freedomPoints": 3
+  },
+  {
+    "id": "Duty",
+    "teamName": "2G's  1 Kupp",
+    "freedomPoints": 2
+  },
+  {
+    "id": "TIMK",
+    "teamName": "Damn That Hurts",
+    "freedomPoints": 1
+  }
+]

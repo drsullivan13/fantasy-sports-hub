@@ -1,0 +1,32 @@
+{
+    2022: {
+        1: [
+            {
+                teamName: 'team1',
+                weekScore: 72.80,
+                weekFreedomPoints: 3,
+                totalFreedomPoints: 3
+            },
+            {
+                teamName: 'team2',
+                weekScore: 96.80,
+                weekFreedomPoints: 8,
+                totalFreedomPoints: 8
+            },
+        ],
+        2: [
+            {
+                teamName: 'team1',
+                weekScore: 100.80,
+                weekFreedomPoints: 7,
+                totalFreedomPoints: 10
+            },
+            {
+                teamName: 'team2',
+                weekScore: 82.80,
+                weekFreedomPoints: 4,
+                totalFreedomPoints: 12
+            },
+        ]
+    }
+}

@@ -5,13 +5,13 @@ import { useParams } from 'react-router-dom'
 
 const freedomColumns = [
     { field: 'teamName', headerName: 'Team Name', minWidth: 200, flex: 1 },
-    { field: 'freedomPoints', headerName: 'Total Bud Light Limes', minWidth: 125, flex: 0.5 },
+    { field: 'freedomPoints', headerName: 'Total FPs', minWidth: 125, flex: 0.5 },
   ]
   
   const weeklyFreedomColumns = [
     { field: 'teamName', headerName: 'Team Name', minWidth: 200, flex: 1 },
     { field: 'weekFreedomPoints', headerName: 'Weekly Points', minWidth: 125, flex: 0.5 },
-    { field: 'freedomPoints', headerName: 'Total Bud Light Limes', minWidth: 125, flex: 0.5 },
+    { field: 'freedomPoints', headerName: 'Total Freedom Points', minWidth: 125, flex: 0.5 },
   ]
 
   const percentageToColor = (perc) => {
@@ -85,8 +85,8 @@ export const Leaderboard = () => {
     setLoading(true)
     let path
     // `https://fantasy-sports-hub-api.vercel.app/results/freedomStandings/${year}` : `https://fantasy-sports-hub-api.vercel.app/results/teamLeaderboard/${year}/${week}`
-    // path = week === 'Freedom' ? `http://localhost:5001/results/${leagueType}/${leagueId}/freedomStandings/${year}` : `http://localhost:5001/results/teamLeaderboard/${year}/${week}`
-    path = week === 'Freedom' ? `https://fantasy-sports-hub-api.vercel.app/results/${leagueType}/${leagueId}/freedomStandings/${year}` : `https://fantasy-sports-hub-api.vercel.app/results/${leagueType}/${leagueId}/teamLeaderboard/${year}/${week}`
+    path = week === 'Freedom' ? `http://localhost:5001/results/${leagueType}/${leagueId}/freedomStandings/${year}` : `http://localhost:5001/results/teamLeaderboard/${year}/${week}`
+    // path = week === 'Freedom' ? `https://fantasy-sports-hub-api.vercel.app/results/${leagueType}/${leagueId}/freedomStandings/${year}` : `https://fantasy-sports-hub-api.vercel.app/results/${leagueType}/${leagueId}/teamLeaderboard/${year}/${week}`
     fetch(path)
     .then((res) => res.json())
     .then(({ data: { freedomPoints, weeklyFreedomPoints } }) => {
@@ -148,7 +148,7 @@ export const Leaderboard = () => {
   const weekMenuItems = () => {
     const menuItems = [
       <MenuItem key="Freedom" value="Freedom">
-        Bud Light Limes
+        Freedom Points
       </MenuItem>,
     ]
 
