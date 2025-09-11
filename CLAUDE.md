@@ -64,12 +64,10 @@ The app uses dynamic routing with `leagueType` and `leagueId` parameters to supp
 
 ## Testing & Quality
 
-- ESLint configured with React and Standard rules (`.eslintrc.yml`)
-- Frontend uses Create React App testing setup
+- ESLint configured with Standard rules (`.eslintrc.yml`)
 - No backend tests currently configured
 
 ## Deployment
 
-- Backend deploys to Vercel (`vercel-build` script)
-- Frontend proxy configured for production API endpoint
-- CORS configured for both local development and production domains
+- Backend deploys to Vercel using Node.js 22 runtime (`vercel-build` script)
+- CORS configured for API access
