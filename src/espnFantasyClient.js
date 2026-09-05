@@ -1,71 +1,77 @@
-import axios from 'axios'
+import pkg from 'espn-fantasy-football-api/node.js'
 
-const footballBaseUrl = 'https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons'
-const baseballBaseUrl = 'https://lm-api-reads.fantasy.espn.com/apis/v3/games/flb/seasons'
-const leagueId = '248873'
+const { Client } = pkg
 
-const cookie = 'espn_s2=AEB6eYtlqIgLDkLzrwf4LAS7KQwaliUFhzuOgsTduWE01%2FhOEbOKQFyeH%2F6gelPrp6Oxkxv00Cw1F1Us13PqoDaHJa4sPl8cLumbND2Kaitv%2BMYpZCYvk4eg53IzA5D8yi%2BbD%2Fk3a%2B8ARmGrOAkDqG71m75xzLzqhm4rvxeUdMftUAh2tTfBtfgTlAq3Uwcrf7yDlzaWyocJa5X4xrYoExKcxcZc%2BvuFI%2F3kROX2BRxjh30EP9QzjtUsaiufdXVY5Qqzqy96c8RPOR6hh5wSe5Ce%2FJXNufBg47j4ml8WizHMo73HIb4Vl%2BKQYIrK4yyE3PQ%3D; SWID={A393ED4A-3AB9-47FF-8EDB-747983FB025A};'
-
-const axiosInstance = axios.create({ withCredentials: true })
-
-export const getTeamInformation = async (year) => {
-  const { data: { teams } } = await axiosInstance.get(`${getBaseUrl()}/${year}/segments/0/leagues/${process.env.LEAGUE_ID}?scoringPeriodId=1&view=mRoster&view=mTeam`,
-    { withCredentials: true, headers: { cookie } })
-  return teams
+const BASE_URLS = {
+  football: 'https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons'
 }
 
-export const getScheduleResultsForYear = async (year) => {
-  const { data: { schedule } } = await axiosInstance.get(`${getBaseUrl()}/${year}/segments/0/leagues/${process.env.LEAGUE_ID}?view=mMatchup&view=mMatchupScore`,
-    { withCredentials: true, headers: { cookie } })
+const getCredentials = () => {
+  const espnS2 = process.env.ESPN_S2
+  const SWID = process.env.ESPN_SWID
 
-
-  return schedule.map(({ home, away, matchupPeriodId, playoffTierType, winner }) =>
-    ({ home: { teamId: home.teamId, totalPoints: home.totalPoints }, away: { teamId: away?.teamId, totalPoints: away?.totalPoints }, matchupPeriodId, playoffTierType, winner }))
-}
-
-export const getScheduleForUpToWeek = async (weekNum) => {
-  const { data: { schedule } } = await axiosInstance.get(`${getBaseUrl()}/${2024}/segments/0/leagues/${process.env.LEAGUE_ID}?view=mMatchup&view=mMatchupScore`,
-    { withCredentials: true, headers: { cookie } })
-
-  return schedule.filter((matchup) => matchup.matchupPeriodId <= weekNum)
-}
-
-export const getLatestScoringPeriod = async () => {
-  const { data: { status: { latestScoringPeriod } } } = await axiosInstance.get(`${getBaseUrl()}/${2024}/segments/0/leagues/${process.env.LEAGUE_ID}`,
-    { withCredentials: true, headers: { cookie } })
-
-  return latestScoringPeriod
-}
-
-export const getSeasonYears = async () => {
-  const { data: { seasonId, status: { previousSeasons } } } = await axiosInstance.get(`${getBaseUrl()}/2025/segments/0/leagues/${leagueId}?view=mMatchup&view=mMatchupScore`,
-    { withCredentials: true, headers: { cookie } })
-
-  return [seasonId, ...previousSeasons]
-}
-
-export const getSeasonWeeks = async (year) => {
-  try {
-    const { data: { status: { currentMatchupPeriod } } } = await axiosInstance.get(
-      `${getBaseUrl()}/${year}/segments/0/leagues/${leagueId}?view=mMatchup&view=mMatchupScore`,
-      { withCredentials: true, headers: { cookie } }
-    );
-    return currentMatchupPeriod;
-  } catch (error) {
-    if (error.response && error.response.status === 404) {
-      // If 404, just return undefined so the caller can filter this year out
-      return undefined;
-    }
-    // For other errors, rethrow
-    throw error;
-  }
-}
-
-const getBaseUrl = () => {
-  const leagueTypeToUrl = {
-    football: footballBaseUrl,
-    baseball: baseballBaseUrl
+  if (!espnS2 || !SWID) {
+    throw new Error('ESPN_S2 and ESPN_SWID must be configured')
   }
 
-  return leagueTypeToUrl[process.env.LEAGUE_TYPE]
+  return { espnS2, SWID }
+}
+
+const getLeagueUrl = ({ leagueType, leagueId, season }) => {
+  const baseUrl = BASE_URLS[leagueType]
+  if (!baseUrl) {
+    throw new Error(`Unsupported league type: ${leagueType}`)
+  }
+
+  return `${baseUrl}/${season}/segments/0/leagues/${leagueId}`
+}
+
+const getCookieHeader = () => {
+  const { espnS2, SWID } = getCredentials()
+  return `espn_s2=${espnS2}; SWID=${SWID};`
+}
+
+const fetchEspnJson = async (url) => {
+  const response = await fetch(url, {
+    headers: { cookie: getCookieHeader() },
+    signal: AbortSignal.timeout(10000)
+  })
+
+  if (!response.ok) throw new Error(`ESPN returned ${response.status}`)
+  return response.json()
+}
+
+const getClient = (leagueId) => {
+  const client = new Client({ leagueId: Number(leagueId) })
+  client.setCookies(getCredentials())
+  return client
+}
+
+export const getLeagueSeason = async ({ leagueType, leagueId, season }) => {
+  const search = new URLSearchParams({ scoringPeriodId: '1' })
+  ;['mMatchup', 'mMatchupScore', 'mRoster', 'mSettings', 'mStatus', 'mTeam']
+    .forEach((view) => search.append('view', view))
+
+  return fetchEspnJson(`${getLeagueUrl({ leagueType, leagueId, season })}?${search}`)
+}
+
+export const getBoxscoresForWeek = async ({ leagueId, season, week }) => {
+  const client = getClient(leagueId)
+  return client.getBoxscoreForWeek({
+    seasonId: Number(season),
+    matchupPeriodId: week,
+    scoringPeriodId: week
+  })
+}
+
+export const getSeasonYears = async ({ leagueType, leagueId }) => {
+  const today = new Date()
+  const currentSeason = Number(process.env.CURRENT_SEASON) ||
+    (today.getMonth() < 6 ? today.getFullYear() - 1 : today.getFullYear())
+  const data = await fetchEspnJson(`${getLeagueUrl({
+    leagueType,
+    leagueId,
+    season: currentSeason
+  })}?view=mStatus`)
+  return [data.seasonId, ...(data.status?.previousSeasons ?? [])]
 }

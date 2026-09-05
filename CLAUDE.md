@@ -4,15 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Architecture
 
-This is a full-stack fantasy sports application with separate backend API and React frontend:
+This repository is the backend fantasy sports API:
 
 - **Backend** (`/src`): Express.js API server that fetches data from ESPN Fantasy Football API
-- **Frontend** (`/client`): React application using Material-UI components and routing
-- **Data Flow**: ESPN API → Backend services → Express routes → React frontend
+- **Consumer**: the separate `freedom-league-ui` Next.js application
+- **Data Flow**: ESPN API → backend scoring modules → Express routes → Next.js server adapter
 
 ### Key Components
 
-- `src/app.js`: Main Express server with CORS configuration and API routes
+- `src/app.js`: Express app factory, validation, CORS, and API routes
+- `src/server.js`: Local listener entry point
 - `src/service/espnService.js`: Core business logic for fantasy sports data processing
 - `src/espnFantasyClient.js`: ESPN API client wrapper
 - `client/src/components/Leaderboard.js`: Primary React component displaying fantasy data
@@ -20,7 +21,7 @@ This is a full-stack fantasy sports application with separate backend API and Re
 ### API Structure
 
 The backend exposes these main endpoints:
-- `/results/:leagueType/:leagueId/teamLeaderboard/:year/:week` - Weekly team rankings
+- `/results/:leagueType/:leagueId/dashboard/:year?week=:week` - Canonical dashboard snapshot
 - `/results/:leagueType/:leagueId/freedomStandings/:year` - Season standings
 - `/leagueInfo` - League metadata
 
@@ -50,24 +51,20 @@ The app uses dynamic routing with `leagueType` and `leagueId` parameters to supp
 ### ESPN Integration
 - Uses `espn-fantasy-football-api` package for data fetching
 - Requires ESPN cookies (espnS2, SWID) for private league access
-- Environment variables `LEAGUE_TYPE` and `LEAGUE_ID` are set per request
+- League arguments are passed explicitly; request handlers never mutate process environment
+- ESPN cookies are server-only environment variables
 
 ### Data Processing
 - "Freedom Points" system: Custom scoring logic in `espnService.js`
 - Team data mapping and sorting happens server-side
 - Frontend receives processed data ready for display
 
-### React Structure
-- Single-page app with React Router for league/season navigation
-- Material-UI DataGrid for data display with custom styling
-- Color coding based on performance percentages
-
 ## Testing & Quality
 
 - ESLint configured with Standard rules (`.eslintrc.yml`)
-- No backend tests currently configured
+- Node's built-in test runner covers scoring and HTTP validation
 
 ## Deployment
 
-- Backend deploys to Vercel using Node.js 22 runtime (`vercel-build` script)
-- CORS configured for API access
+- Backend deploys to Vercel using Node.js 22
+- `api/index.js` imports the Express app without starting a local listener

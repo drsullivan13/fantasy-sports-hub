@@ -1,50 +1,99 @@
-import pkg from 'espn-fantasy-football-api/node.js'
-import { getFreedomStandings, getAllTeamScoresSortedForWeek, getLeagueInfo } from './service/index.js'
-import express from 'express'
-import { JSend } from 'jsend-express'
 import cors from 'cors'
-const { Client } = pkg
+import express from 'express'
+import { getDashboard, getFreedomStandings, getLeagueInfo } from './service/index.js'
 
-const myClient = new Client({ leagueId: 248873 })
-myClient.setCookies({
-  espnS2: 'AEBNiyj2iDnjuTXVAfbzp1pJYeiACmmgU6Wq7sVi%2FR6PadoeiBqbyO1DH59pPiFrj2j46fyrAz6QglTFRfdv6UdBcilVsEz7qoLmze5cFbAyZzlbf0DnO2j1WBEUnvsKegjCpZwn93Epo0eIuwaXD108Q5mCzmRFjAsMLlAaRhTEvVsq7NOiRQUje7vatEUkn1t5OtKkwpAJSRao1Hp5ngbbM%2Flb1%2F3cKaozUeJ%2BSuJ5q9CBCSbb7j3vBvmxk2jX8I2KUv5jGorqKgBVi6LtJbOKMuPo4XBH3gB%2BdEoMiKhnHOB%2FYHshQA67slLdfDvyN%2BE%3D',
-  SWID: '{A393ED4A-3AB9-47FF-8EDB-747983FB025A}'
-})
+const DEFAULT_ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'https://freedom-league-ui.vercel.app'
+]
 
-const app = express()
+const parseLeagueParams = (input) => {
+  const leagueType = String(input.leagueType ?? '')
+  const leagueId = String(input.leagueId ?? '')
 
-app.use(cors({
-  origin: ['https://fantasy-sports-hub-api.vercel.app', 'http://localhost:3000'],
-  methods: ['GET'],
-  credentials: true
-}))
+  if (leagueType !== 'football' || !/^\d+$/.test(leagueId)) {
+    const error = new Error('Invalid league type or league ID')
+    error.status = 400
+    throw error
+  }
 
-const jsend = new JSend({ name: 'fantasy-sports-hub', version: '0.0.1', release: '0.0.1' })
+  const configuredLeagueId = process.env.LEAGUE_ID ?? '248873'
+  if (leagueId !== configuredLeagueId) {
+    const error = new Error('League is not configured')
+    error.status = 404
+    throw error
+  }
 
-app.use(jsend.middleware.bind(jsend))
-app.use(express.json())
+  return { leagueType, leagueId }
+}
 
-const PORT = 5001
+const parseSeason = (season) => {
+  const value = Number(season)
+  if (!Number.isInteger(value) || value < 2010 || value > new Date().getFullYear() + 1) {
+    const error = new Error('Invalid season')
+    error.status = 400
+    throw error
+  }
+  return value
+}
 
-// Serve static files
-// app.use(express.static('client/build')
+const asyncRoute = (handler) => (req, res, next) => {
+  Promise.resolve(handler(req, res, next)).catch(next)
+}
 
-app.get('/results/:leagueType/:leagueId/freedomStandings/:year', async (req, res, next) => {
-  const { year, leagueType, leagueId } = req.params
-  process.env.LEAGUE_TYPE = leagueType
-  process.env.LEAGUE_ID = leagueId
-  const freedomStandings = await getFreedomStandings(year)
-  res.success({ data: freedomStandings })
-})
+export const createApp = () => {
+  const app = express()
+  const configuredOrigins = process.env.ALLOWED_ORIGINS?.split(',').map((origin) => origin.trim())
+  const allowedOrigins = configuredOrigins?.filter(Boolean) ?? DEFAULT_ALLOWED_ORIGINS
 
-app.get('/leagueInfo', async (req, res, next) => {
-  const { leagueType, leagueId } = req.query
-  process.env.LEAGUE_TYPE = leagueType
-  process.env.LEAGUE_ID = leagueId
-  const leagueInfo = await getLeagueInfo()
-  res.success({ data: leagueInfo })
-})
+  app.disable('x-powered-by')
+  app.use(cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true)
+      callback(new Error('Origin is not allowed'))
+    },
+    methods: ['GET'],
+    maxAge: 86400
+  }))
+  app.use(express.json({ limit: '16kb' }))
 
-app.listen(PORT, () => console.log(`App listening at port ${PORT}`))
+  app.get('/health', (_req, res) => {
+    res.json({ status: 'ok' })
+  })
 
-export default app
+  app.get('/results/:leagueType/:leagueId/dashboard/:year', asyncRoute(async (req, res) => {
+    const league = parseLeagueParams(req.params)
+    const season = parseSeason(req.params.year)
+    const week = req.query.week == null ? undefined : Number(req.query.week)
+    const dashboard = await getDashboard({ ...league, season, week })
+    res.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=900')
+    res.json({ data: dashboard })
+  }))
+
+  app.get('/results/:leagueType/:leagueId/freedomStandings/:year', asyncRoute(async (req, res) => {
+    const league = parseLeagueParams(req.params)
+    const season = parseSeason(req.params.year)
+    const standings = await getFreedomStandings({ ...league, season })
+    res.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=900')
+    res.json({ data: standings })
+  }))
+
+  app.get('/leagueInfo', asyncRoute(async (req, res) => {
+    const league = parseLeagueParams(req.query)
+    const info = await getLeagueInfo(league)
+    res.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400')
+    res.json({ data: info })
+  }))
+
+  app.use((error, _req, res, _next) => {
+    const status = error.status ?? (error.message === 'Origin is not allowed' ? 403 : 500)
+    if (status >= 500) console.error('Request failed:', error.message)
+    res.status(status).json({
+      error: status >= 500 ? 'Unable to load league data' : error.message
+    })
+  })
+
+  return app
+}
+
+export default createApp()
